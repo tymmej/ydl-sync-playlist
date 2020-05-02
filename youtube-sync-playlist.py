@@ -106,6 +106,7 @@ if __name__ == "__main__":
 
         new_info_file[video['id']] = filename
         f.write("%s:%s\n" % (video['id'], filename))
+        f.flush()
 
     f.close()
 
