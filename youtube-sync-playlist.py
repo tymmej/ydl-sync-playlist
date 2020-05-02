@@ -44,10 +44,10 @@ def youtube_get_video(video_id):
 
     new_filename = re.sub(REPLACE, '', filename)
     
-    files = glob.glob(filename + "*")
-    if len(files) == 1:
+    files = glob.glob(new_filename + "*")
+    if len(files) == 1 and not files[0].endswith(".part"):
         print("File present but not in database")
-        return filename
+        return new_filename
 
     ydl.download([url])
     
@@ -84,7 +84,7 @@ def remove_deleted_videos(info_file, directory):
     for root, _, files in os.walk(directory):
         for name in files:
             filename = os.path.join(root, name)
-            if os.path.splitext(filename)[0] not in info_file.values() or name == os.path.basename(COOKIES):
+            if os.path.splitext(filename)[0] not in info_file.values() and name != os.path.basename(INFO_FILE):
                 print("Deleting %s" % filename)
                 os.remove(filename)
             if not os.listdir(root):
