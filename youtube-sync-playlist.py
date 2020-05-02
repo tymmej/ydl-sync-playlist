@@ -13,6 +13,7 @@ OUTPUT_FORMAT = "%(upload_date)s/%(uploader)s - %(title)s.%(ext)s"
 OUTPUT_FILE = "%s/%s" % (DIR, OUTPUT_FORMAT)
 VIDEO_FORMAT = 'bestvideo[height<=1080,ext=mp4]+bestaudio'
 PLAYLIST = 'https://www.youtube.com/playlist?list=WL'
+REPLACE='[^A-Za-z0-9#/ \-\.]+'
 
 def youtube_get_playlist(playlist):
     ydl = youtube_dl.YoutubeDL({'dump_single_json': True,
@@ -38,16 +39,28 @@ def youtube_get_video(video_id):
     info = ydl.extract_info(url, download=False)
     filename = ydl.prepare_filename(info)
     print("%s is %s" % (video['id'], filename))
-
-    ydl.download([url])
-
+    
     filename = os.path.splitext(filename)[0]
 
+    new_filename = re.sub(REPLACE, '', filename)
+    
+    files = glob.glob(filename + "*")
+    if len(files) == 1:
+        print("File present but not in database")
+        return filename
+
+    ydl.download([url])
+    
     files = glob.glob(filename + "*")
     if len(files) != 1:
         raise Exception("Weird")
 
     filename = files[0]
+    
+    new_filename = re.sub(REPLACE, '', filename)
+    shutil.move(filename, new_filename)
+    filename = new_filename
+    filename = os.path.splitext(filename)[0]
 
     return filename
 
@@ -100,10 +113,6 @@ if __name__ == "__main__":
         else:
             try:
                 filename = youtube_get_video(video['id'])
-                new_filename = re.sub('[^A-Za-z0-9#/ \-\.]+', '', filename)
-                shutil.move(filename, new_filename)
-                filename = new_filename
-                filename = os.path.splitext(filename)[0]
             except youtube_dl.utils.DownloadError:
                 print("Private video %s" % video['id'])
                 continue
