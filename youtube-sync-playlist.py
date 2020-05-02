@@ -113,7 +113,7 @@ if __name__ == "__main__":
 
     f.close()
     
-    shutil.move(INFO_FILE, new_info_filename)
+    shutil.move(new_info_filename, INFO_FILE)
 
     remove_deleted_videos(new_info_file, DIR)
 
