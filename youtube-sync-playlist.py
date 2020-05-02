@@ -81,15 +81,15 @@ if __name__ == "__main__":
     if not os.path.exists(DIR):
         os.makedirs(DIR)
 
+    new_info_file = {}
+    new_info_filename = INFO_FILE + ".new"
+
     if os.path.exists(new_info_filename):
         shutil.move(new_info_filename, INFO_FILE)
     
     info_file = load_info(INFO_FILE)
 
     videos = youtube_get_playlist(PLAYLIST)
-
-    new_info_file = {}
-    new_info_filename = INFO_FILE + ".new"
 
     f = open(new_info_filename, "w")
     
