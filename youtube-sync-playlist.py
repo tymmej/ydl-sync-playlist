@@ -71,7 +71,7 @@ def remove_deleted_videos(info_file, directory):
     for root, _, files in os.walk(directory):
         for name in files:
             filename = os.path.join(root, name)
-            if os.path.splitext(filename)[0] not in info_file.values() or name == COOKIE:
+            if os.path.splitext(filename)[0] not in info_file.values() or name == COOKIES:
                 print("Deleting %s" % filename)
                 os.remove(filename)
             if not os.listdir(root):
