@@ -86,9 +86,12 @@ if __name__ == "__main__":
     videos = youtube_get_playlist(PLAYLIST)
 
     new_info_file = {}
+    new_info_filename = INFO_FILE + ".new"
 
-    f = open(INFO_FILE, "w")
-
+    if os.path.exists(new_info_filename):
+        os.remove(new_info_filename)
+    f = open(new_info_filename, "w")
+    
     for video in videos:
         if video['id'] in info_file.keys():
             print("File %s already exists" % video['id'])
@@ -109,5 +112,8 @@ if __name__ == "__main__":
         f.flush()
 
     f.close()
+    
+    shutil.move(INFO_FILE, new_info_filename)
 
     remove_deleted_videos(new_info_file, DIR)
+
