@@ -27,8 +27,7 @@ def youtube_get_playlist(playlist):
 
     return videos['entries']
 
-
-def youtube_get_video(video_id):
+def file_present(video_id):
     url = 'https://www.youtube.com/watch?v=%s' % video_id
     print("Downloading %s" % url)
 
@@ -46,9 +45,24 @@ def youtube_get_video(video_id):
     
     files = glob.glob(new_filename + "*")
     if len(files) == 1 and not files[0].endswith(".part"):
-        print("File present but not in database")
-        return new_filename
+        print("File present")
+        return (True, new_filename)
+    else:
+        return (False, new_filename)
+    
 
+def youtube_get_video(video_id):
+    present, filename = file_present(video_id)
+    if present:
+        return filename
+
+    url = 'https://www.youtube.com/watch?v=%s' % video_id
+    print("Downloading %s" % url)
+
+    ydl = youtube_dl.YoutubeDL({'outtmpl': OUTPUT_FILE,
+                                'format' : VIDEO_FORMAT,
+                                'cookiefile' : COOKIES})
+    
     ydl.download([url])
     
     files = glob.glob(glob.escape(filename) + "*")
@@ -107,7 +121,7 @@ if __name__ == "__main__":
     f = open(new_info_filename, "w")
     
     for video in videos:
-        if video['id'] in info_file.keys():
+        if video['id'] in info_file.keys() and file_present(video['id'])[0]:
             print("File %s already exists" % video['id'])
             filename = info_file[video['id']]
         else:
