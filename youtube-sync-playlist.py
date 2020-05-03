@@ -51,7 +51,7 @@ def youtube_get_video(video_id):
 
     ydl.download([url])
     
-    files = glob.glob(filename + "*")
+    files = glob.glob(glob.escape(filename) + "*")
     if len(files) != 1:
         raise Exception("Weird")
 
