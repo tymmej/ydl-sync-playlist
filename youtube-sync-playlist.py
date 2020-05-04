@@ -8,7 +8,6 @@ import youtube_dl
 
 COOKIES = "/home/tymmej/cookies.txt"
 DIR = "/storage/Videos/youtube"
-INFO_FILE = "%s/info.txt" % DIR
 OUTPUT_FORMAT = "%(upload_date)s/%(uploader)s - %(title)s.%(ext)s"
 OUTPUT_FILE = "%s/%s" % (DIR, OUTPUT_FORMAT)
 VIDEO_FORMAT = 'bestvideo[height<=1080,ext=mp4]+bestaudio'
@@ -48,8 +47,7 @@ def file_present(video_id):
         print("File present")
         return (True, new_filename)
     else:
-        return (False, new_filename)
-    
+        return (False, filename)
 
 def youtube_get_video(video_id):
     present, filename = file_present(video_id)
@@ -78,27 +76,11 @@ def youtube_get_video(video_id):
 
     return filename
 
-def load_info(info_file):
-    if not os.path.isfile(info_file):
-        return {}
-
-    with open(info_file, "r") as f:
-        data = f.read()
-
-    videos = data.splitlines()
-
-    videos_dict = {}
-    for video in videos:
-        video_id, video_filename = video.split(':')
-        videos_dict[video_id] = video_filename
-
-    return videos_dict
-
 def remove_deleted_videos(info_file, directory):
     for root, _, files in os.walk(directory):
         for name in files:
             filename = os.path.join(root, name)
-            if os.path.splitext(filename)[0] not in info_file.values() and name != os.path.basename(INFO_FILE):
+            if os.path.splitext(filename)[0] not in info_file.values():
                 print("Deleting %s" % filename)
                 os.remove(filename)
             if not os.listdir(root):
@@ -109,35 +91,17 @@ if __name__ == "__main__":
         os.makedirs(DIR)
 
     new_info_file = {}
-    new_info_filename = INFO_FILE + ".new"
-
-    if os.path.exists(new_info_filename):
-        shutil.move(new_info_filename, INFO_FILE)
-    
-    info_file = load_info(INFO_FILE)
 
     videos = youtube_get_playlist(PLAYLIST)
 
-    f = open(new_info_filename, "w")
-    
     for video in videos:
-        if video['id'] in info_file.keys() and file_present(video['id'])[0]:
-            print("File %s already exists" % video['id'])
-            filename = info_file[video['id']]
-        else:
-            try:
-                filename = youtube_get_video(video['id'])
-            except youtube_dl.utils.DownloadError:
-                print("Private video %s" % video['id'])
-                continue
+        try:
+            filename = youtube_get_video(video['id'])
+        except youtube_dl.utils.DownloadError:
+            print("Private video %s" % video['id'])
+            continue
 
         new_info_file[video['id']] = filename
-        f.write("%s:%s\n" % (video['id'], filename))
-        f.flush()
-
-    f.close()
     
-    shutil.move(new_info_filename, INFO_FILE)
-
     remove_deleted_videos(new_info_file, DIR)
 
